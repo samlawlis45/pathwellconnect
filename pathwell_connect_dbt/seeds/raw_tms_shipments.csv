@@ -1,0 +1,3 @@
+shipment_id,order_id,origin_loc_id,dest_loc_id,planned_pickup,planned_delivery,carrier_id,status
+SHP-1001,ORD-5001,LOC-CHI-01,LOC-ATL-01,2023-10-02 08:00:00,2023-10-04 16:00:00,CARRIER-B,DELIVERED
+

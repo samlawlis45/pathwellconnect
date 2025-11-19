@@ -1,0 +1,26 @@
+version: 2
+
+sources:
+  - name: erp
+    schema: raw_erp
+    tables:
+      - name: orders
+  - name: tms
+    schema: raw_tms
+    tables:
+      - name: shipments
+      - name: shipment_events
+  - name: visibility
+    schema: raw_visibility
+    tables:
+      - name: tracking_events
+  - name: audit
+    schema: raw_audit
+    tables:
+      - name: invoices
+      - name: charges
+  - name: risk
+    schema: raw_risk
+    tables:
+      - name: risk_events
+

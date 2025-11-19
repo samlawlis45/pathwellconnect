@@ -1,0 +1,3 @@
+order_id,customer_id,order_date,must_arrive_by_date,total_value,currency
+ORD-5001,CUST-99,2023-10-01,2023-10-05,15000.00,USD
+

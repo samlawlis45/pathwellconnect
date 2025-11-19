@@ -1,0 +1,6 @@
+party_id,type,name
+CARRIER-A,CARRIER,FastFreight Inc
+CARRIER-B,CARRIER,Reliable Haulers
+SHIPPER-1,SHIPPER,Acme Corp
+CUST-99,CUSTOMER,RetailGiant
+

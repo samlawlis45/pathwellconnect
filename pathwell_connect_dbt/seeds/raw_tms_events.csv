@@ -1,0 +1,6 @@
+event_id,shipment_id,event_type,event_ts,description,source_system
+EVT-001,SHP-1001,TMS_TENDER_OFFER,2023-10-01 10:00:00,Offer to Carrier A,TMS
+EVT-002,SHP-1001,TMS_TENDER_REJECT,2023-10-01 12:00:00,Carrier A Rejected,TMS
+EVT-003,SHP-1001,TMS_RE_BID,2023-10-01 12:30:00,Re-bid market,TMS
+EVT-004,SHP-1001,TMS_CARRIER_ASSIGNED,2023-10-01 16:00:00,Assigned Carrier B (Late),TMS
+

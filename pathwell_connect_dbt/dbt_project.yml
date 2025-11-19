@@ -1,0 +1,28 @@
+name: "pathwell_connect_ledger"
+version: "1.0.0"
+config-version: 2
+
+profile: "pathwell_connect"
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_modules"]
+
+models:
+  pathwell_connect_ledger:
+    staging:
+      +schema: "stg_pathwell"
+      +materialized: "view"
+    core:
+      +schema: "core_pathwell"
+      +materialized: "table"
+    marts:
+      +schema: "marts_pathwell"
+      +materialized: "view"
+

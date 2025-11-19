@@ -1,0 +1,3 @@
+invoice_id,shipment_id,carrier_id,invoice_date,total_amount,currency,status
+INV-888,SHP-1001,CARRIER-B,2023-10-06,1325.00,USD,APPROVED
+

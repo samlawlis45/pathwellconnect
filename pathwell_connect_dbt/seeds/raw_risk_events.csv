@@ -1,0 +1,3 @@
+event_id,risk_type,severity,risk_source,event_ts,geo_lat,geo_lon,description,source_system
+RISK-99,WEATHER_STORM,HIGH,NOAA,2023-10-03 14:00:00,36.16,-86.78,Severe Thunderstorm Nashville Corridor,WEATHER_API
+

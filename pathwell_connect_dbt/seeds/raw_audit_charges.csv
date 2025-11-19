@@ -1,0 +1,4 @@
+charge_id,invoice_id,charge_type,amount,currency,description
+CHG-701,INV-888,FREIGHT_BASE,1200.00,USD,Contract Rate
+CHG-702,INV-888,DETENTION,125.00,USD,2 Hours Detention
+

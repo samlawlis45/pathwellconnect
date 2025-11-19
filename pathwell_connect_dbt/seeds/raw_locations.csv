@@ -1,0 +1,4 @@
+location_id,name,city,state,country,lat,lon
+LOC-CHI-01,Chicago DC,Chicago,IL,USA,41.87,-87.62
+LOC-ATL-01,Atlanta Store,Atlanta,GA,USA,33.74,-84.38
+
