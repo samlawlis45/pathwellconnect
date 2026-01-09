@@ -1,0 +1,86 @@
+Metadata-Version: 2.4
+Name: pathwell-connect
+Version: 0.1.0
+Summary: Pathwell Connect SDK for Python
+Author: Pathwell
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: requests>=2.28.0
+Requires-Dist: cryptography>=41.0.0
+Dynamic: author
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+# Pathwell Connect Python SDK
+
+Python SDK for Pathwell Connect MVG.
+
+## Installation
+
+```bash
+pip install -e .
+```
+
+## Usage
+
+```python
+from pathwell import PathwellClient
+
+# Initialize client
+client = PathwellClient(
+    agent_id="agent-123",
+    private_key_path="./agent.key",
+    proxy_url="https://proxy.pathwell.io"
+)
+
+# Make requests
+response = client.post(
+    url="https://api.example.com/v1/chat",
+    body={"message": "Hello"}
+)
+
+print(response.json())
+```
+
+## Generating Keys
+
+```python
+from pathwell import generate_key_pair
+
+private_key, public_key = generate_key_pair()
+
+# Save keys
+with open("agent.key", "w") as f:
+    f.write(private_key)
+
+with open("agent.pub", "w") as f:
+    f.write(public_key)
+```
+
+## API Reference
+
+### PathwellClient
+
+Main client class for making authenticated requests.
+
+#### Methods
+
+- `call(method, url, headers=None, body=None, **kwargs)`: Make a request
+- `get(url, **kwargs)`: GET request
+- `post(url, body=None, **kwargs)`: POST request
+- `put(url, body=None, **kwargs)`: PUT request
+- `patch(url, body=None, **kwargs)`: PATCH request
+- `delete(url, **kwargs)`: DELETE request
+

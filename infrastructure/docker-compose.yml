@@ -1,0 +1,171 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pathwell
+    ports:
+      - "5433:5432"  # Using 5433 to avoid conflict with existing PostgreSQL
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  opa:
+    build:
+      context: ../services/policy-engine
+      dockerfile: Dockerfile
+    ports:
+      - "8181:8181"
+    command: run --server --addr=0.0.0.0:8181 --log-level=info /policies
+    volumes:
+      - ../services/policy-engine/policies:/policies
+    healthcheck:
+      test: ["CMD-SHELL", "opa version || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  identity-registry:
+    build:
+      context: ../services/identity-registry
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/pathwell
+      PORT: 3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  policy-engine:
+    build:
+      context: ../services/policy-engine
+      dockerfile: Dockerfile.wrapper
+    ports:
+      - "3002:3002"
+    environment:
+      OPA_URL: http://opa:8181
+      PORT: 3002
+    depends_on:
+      opa:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  receipt-store:
+    build:
+      context: ../services/receipt-store
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_TOPIC: pathwell-receipts
+      S3_BUCKET: ${S3_BUCKET:-pathwell-receipts}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/pathwell
+      PORT: 3003
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  proxy-gateway:
+    build:
+      context: ../services/proxy-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      TARGET_BACKEND_URL: ${TARGET_BACKEND_URL:-http://httpbin.org}
+      IDENTITY_REGISTRY_URL: http://identity-registry:3001
+      POLICY_ENGINE_URL: http://policy-engine:3002
+      RECEIPT_STORE_URL: http://receipt-store:3003
+      PORT: 8080
+      LISTEN_HOST: 0.0.0.0
+    depends_on:
+      identity-registry:
+        condition: service_healthy
+      policy-engine:
+        condition: service_healthy
+      receipt-store:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  dashboard:
+    build:
+      context: ../dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3003
+    depends_on:
+      receipt-store:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+

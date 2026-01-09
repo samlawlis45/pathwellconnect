@@ -1,0 +1,8 @@
+{
+  "pathwell": {
+    "allowed_paths": [
+      "**"
+    ]
+  }
+}
+

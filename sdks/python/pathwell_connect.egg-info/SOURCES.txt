@@ -1,0 +1,10 @@
+README.md
+setup.py
+pathwell/__init__.py
+pathwell/auth.py
+pathwell/client.py
+pathwell_connect.egg-info/PKG-INFO
+pathwell_connect.egg-info/SOURCES.txt
+pathwell_connect.egg-info/dependency_links.txt
+pathwell_connect.egg-info/requires.txt
+pathwell_connect.egg-info/top_level.txt
