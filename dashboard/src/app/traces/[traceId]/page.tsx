@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTrace } from '@/hooks/useTraces';
 import { format, formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
+import { Icon } from '@iconify/react';
 import { Timeline } from '@/components/timeline/Timeline';
 import { DecisionTreeView } from '@/components/decision-tree/DecisionTree';
 
@@ -14,7 +15,10 @@ export default function TraceDetailPage({ params }: { params: { traceId: string 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="text-slate-400">Loading trace...</div>
+        <div className="text-slate-400 flex items-center gap-2">
+          <Icon icon="solar:refresh-outline" className="w-5 h-5 animate-spin" />
+          Loading trace...
+        </div>
       </div>
     );
   }
@@ -22,7 +26,10 @@ export default function TraceDetailPage({ params }: { params: { traceId: string 
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="text-red-400">Error loading trace: {error.message}</div>
+        <div className="text-red-500 flex items-center gap-2">
+          <Icon icon="solar:danger-triangle-outline" className="w-5 h-5" />
+          Error loading trace: {error.message}
+        </div>
       </div>
     );
   }
@@ -30,7 +37,10 @@ export default function TraceDetailPage({ params }: { params: { traceId: string 
   if (!trace) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="text-slate-400">Trace not found</div>
+        <div className="text-slate-400 flex items-center gap-2">
+          <Icon icon="solar:inbox-outline" className="w-5 h-5" />
+          Trace not found
+        </div>
       </div>
     );
   }
@@ -41,65 +51,85 @@ export default function TraceDetailPage({ params }: { params: { traceId: string 
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Link href="/traces" className="text-slate-400 hover:text-white">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
+            <Link href="/traces" className="text-slate-400 hover:text-pathwell-600 transition-colors">
+              <Icon icon="solar:arrow-left-outline" className="w-5 h-5" />
             </Link>
-            <h1 className="text-2xl font-bold text-white">Trace Detail</h1>
+            <h1 className="text-2xl font-semibold text-slate-900">Trace Detail</h1>
             <StatusBadge status={trace.status} />
           </div>
           {trace.correlation_id && (
-            <p className="text-slate-400">
+            <p className="text-slate-500">
               Correlation ID:{' '}
-              <code className="bg-slate-800 px-2 py-1 rounded text-pathwell-blue">
+              <code className="bg-pathwell-50 text-pathwell-700 px-2 py-1 rounded font-mono text-sm">
                 {trace.correlation_id}
               </code>
             </p>
           )}
-          <p className="text-slate-500 text-sm mt-1 font-mono">{trace.trace_id}</p>
+          <p className="text-slate-400 text-sm mt-1 font-mono">{trace.trace_id}</p>
         </div>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <SummaryCard title="Events" value={trace.event_count} />
+        <SummaryCard
+          title="Events"
+          value={trace.event_count}
+          icon="solar:bolt-outline"
+        />
         <SummaryCard
           title="Policy Denials"
           value={trace.policy_deny_count}
+          icon="solar:shield-cross-outline"
           variant={trace.policy_deny_count > 0 ? 'danger' : 'default'}
         />
         <SummaryCard
           title="Started"
           value={format(new Date(trace.started_at), 'MMM d, HH:mm:ss')}
+          icon="solar:clock-circle-outline"
           small
         />
         <SummaryCard
           title="Last Activity"
           value={formatDistanceToNow(new Date(trace.last_event_at), { addSuffix: true })}
+          icon="solar:history-outline"
           small
         />
       </div>
 
       {/* Agent info */}
       {trace.initiating_agent_id && (
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-          <div className="text-sm text-slate-400 mb-1">Initiating Agent</div>
-          <div className="text-white font-mono">{trace.initiating_agent_id}</div>
+        <div className="bg-white border border-slate-200 rounded-xl p-4">
+          <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
+            <Icon icon="solar:user-circle-outline" className="w-4 h-4" />
+            Initiating Agent
+          </div>
+          <div className="text-slate-900 font-mono">{trace.initiating_agent_id}</div>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
-        <div className="border-b border-slate-700 px-4">
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div className="border-b border-slate-100 px-4">
           <nav className="flex gap-4">
-            <TabButton active={activeTab === 'timeline'} onClick={() => setActiveTab('timeline')}>
+            <TabButton
+              active={activeTab === 'timeline'}
+              onClick={() => setActiveTab('timeline')}
+              icon="solar:timeline-down-outline"
+            >
               Timeline
             </TabButton>
-            <TabButton active={activeTab === 'decisions'} onClick={() => setActiveTab('decisions')}>
+            <TabButton
+              active={activeTab === 'decisions'}
+              onClick={() => setActiveTab('decisions')}
+              icon="solar:share-outline"
+            >
               Decision Tree
             </TabButton>
-            <TabButton active={activeTab === 'raw'} onClick={() => setActiveTab('raw')}>
+            <TabButton
+              active={activeTab === 'raw'}
+              onClick={() => setActiveTab('raw')}
+              icon="solar:code-square-outline"
+            >
               Raw Data
             </TabButton>
           </nav>
@@ -109,7 +139,7 @@ export default function TraceDetailPage({ params }: { params: { traceId: string 
           {activeTab === 'timeline' && <Timeline events={timeline} />}
           {activeTab === 'decisions' && decisionTree && <DecisionTreeView data={decisionTree} />}
           {activeTab === 'raw' && (
-            <pre className="bg-slate-900 p-4 rounded-lg overflow-auto max-h-[600px] text-sm text-slate-300">
+            <pre className="bg-slate-50 border border-slate-200 p-4 rounded-lg overflow-auto max-h-[600px] text-sm text-slate-700 font-mono">
               {JSON.stringify({ trace, timeline, decisionTree }, null, 2)}
             </pre>
           )}
@@ -120,14 +150,14 @@ export default function TraceDetailPage({ params }: { params: { traceId: string 
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const colorClasses = {
-    active: 'bg-green-400/20 text-green-400 border-green-400/30',
-    completed: 'bg-slate-400/20 text-slate-400 border-slate-400/30',
-    failed: 'bg-red-400/20 text-red-400 border-red-400/30',
-  }[status] || 'bg-slate-400/20 text-slate-400 border-slate-400/30';
+  const classes = {
+    active: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
+    completed: 'bg-slate-50 text-slate-600 ring-slate-500/20',
+    failed: 'bg-red-50 text-red-700 ring-red-600/20',
+  }[status] || 'bg-slate-50 text-slate-600 ring-slate-500/20';
 
   return (
-    <span className={`px-3 py-1 rounded-full text-sm font-medium border ${colorClasses}`}>
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ring-1 ring-inset ${classes}`}>
       {status}
     </span>
   );
@@ -136,21 +166,31 @@ function StatusBadge({ status }: { status: string }) {
 function SummaryCard({
   title,
   value,
+  icon,
   variant = 'default',
   small = false,
 }: {
   title: string;
   value: string | number;
+  icon: string;
   variant?: 'default' | 'danger';
   small?: boolean;
 }) {
-  const valueClasses = variant === 'danger' ? 'text-red-400' : 'text-white';
+  const valueClasses = variant === 'danger' ? 'text-red-600' : 'text-slate-900';
+  const iconClasses = variant === 'danger' ? 'text-red-500 bg-red-50' : 'text-pathwell-500 bg-pathwell-50';
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-      <div className="text-sm text-slate-400">{title}</div>
-      <div className={`${small ? 'text-lg' : 'text-2xl'} font-bold mt-1 ${valueClasses}`}>
-        {value}
+    <div className="bg-white border border-slate-200 rounded-xl p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-sm text-slate-500">{title}</div>
+          <div className={`${small ? 'text-lg' : 'text-2xl'} font-semibold mt-1 ${valueClasses}`}>
+            {value}
+          </div>
+        </div>
+        <div className={`w-10 h-10 rounded-lg ${iconClasses} flex items-center justify-center`}>
+          <Icon icon={icon} className="w-5 h-5" />
+        </div>
       </div>
     </div>
   );
@@ -159,21 +199,24 @@ function SummaryCard({
 function TabButton({
   active,
   onClick,
+  icon,
   children,
 }: {
   active: boolean;
   onClick: () => void;
+  icon: string;
   children: React.ReactNode;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`py-3 px-1 border-b-2 transition-colors ${
+      className={`flex items-center gap-2 py-3 px-1 border-b-2 transition-colors text-sm font-medium ${
         active
-          ? 'border-pathwell-blue text-white'
-          : 'border-transparent text-slate-400 hover:text-slate-200'
+          ? 'border-pathwell-600 text-pathwell-600'
+          : 'border-transparent text-slate-500 hover:text-slate-700'
       }`}
     >
+      <Icon icon={icon} className="w-4 h-4" />
       {children}
     </button>
   );

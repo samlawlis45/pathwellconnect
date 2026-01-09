@@ -17,29 +17,37 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="min-h-screen">
-          <header className="border-b border-slate-700 bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="min-h-screen bg-white">
+          <header className="border-b border-slate-200 bg-white sticky top-0 z-50">
+            <div className="max-w-7xl mx-auto px-6 py-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-8">
-                  <a href="/" className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-pathwell-blue flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                <div className="flex items-center gap-10">
+                  <a href="/" className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-pathwell-500 to-pathwell-400 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
+                        <path d="M4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M12 4L19 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M12 4L12 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                       </svg>
                     </div>
-                    <span className="text-xl font-semibold text-white">Pathwell Connect</span>
+                    <span className="text-lg font-semibold text-slate-900">Pathwell Connect</span>
                   </a>
-                  <nav className="flex items-center gap-6">
-                    <a href="/" className="text-slate-300 hover:text-white transition-colors">Dashboard</a>
-                    <a href="/traces" className="text-slate-300 hover:text-white transition-colors">Traces</a>
-                    <a href="/lookup" className="text-slate-300 hover:text-white transition-colors">Lookup</a>
+                  <nav className="flex items-center gap-1">
+                    <a href="/" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-pathwell-600 hover:bg-slate-50 rounded-lg transition-colors">
+                      Dashboard
+                    </a>
+                    <a href="/traces" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-pathwell-600 hover:bg-slate-50 rounded-lg transition-colors">
+                      Traces
+                    </a>
+                    <a href="/lookup" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-pathwell-600 hover:bg-slate-50 rounded-lg transition-colors">
+                      Lookup
+                    </a>
                   </nav>
                 </div>
               </div>
             </div>
           </header>
-          <main className="max-w-7xl mx-auto px-4 py-8">
+          <main className="max-w-7xl mx-auto px-6 py-8">
             {children}
           </main>
         </div>

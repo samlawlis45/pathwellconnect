@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -12,6 +12,7 @@ import ReactFlow, {
   NodeProps,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { Icon } from '@iconify/react';
 import type { DecisionTree } from '@/lib/types';
 
 interface DecisionTreeViewProps {
@@ -20,40 +21,28 @@ interface DecisionTreeViewProps {
 
 function DecisionNodeComponent({ data }: NodeProps) {
   const bgColor = data.outcome
-    ? 'bg-green-500/20 border-green-500'
-    : 'bg-red-500/20 border-red-500';
+    ? 'bg-emerald-50 border-emerald-400'
+    : 'bg-red-50 border-red-400';
 
-  const iconColor = data.outcome ? 'text-green-400' : 'text-red-400';
+  const iconName = {
+    identity: 'solar:user-circle-outline',
+    policy: 'solar:shield-check-outline',
+    action: 'solar:bolt-outline',
+  }[data.nodeType as string] || 'solar:widget-outline';
 
-  const icon = {
-    identity: (
-      <svg className={`w-5 h-5 ${iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-    ),
-    policy: (
-      <svg className={`w-5 h-5 ${iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-      </svg>
-    ),
-    action: (
-      <svg className={`w-5 h-5 ${iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
-    ),
-  }[data.nodeType] || null;
+  const iconColor = data.outcome ? 'text-emerald-500' : 'text-red-500';
 
   return (
-    <div className={`px-4 py-3 rounded-lg border-2 ${bgColor} min-w-[180px]`}>
-      <Handle type="target" position={Position.Top} className="!bg-slate-500" />
+    <div className={`px-4 py-3 rounded-lg border-2 ${bgColor} min-w-[180px] bg-white`}>
+      <Handle type="target" position={Position.Top} className="!bg-slate-400" />
       <div className="flex items-center gap-2">
-        {icon}
+        <Icon icon={iconName} className={`w-5 h-5 ${iconColor}`} />
         <div>
-          <div className="text-xs text-slate-400 uppercase">{data.nodeType}</div>
-          <div className="text-sm text-white font-medium">{data.label}</div>
+          <div className="text-xs text-slate-500 uppercase tracking-wide">{data.nodeType}</div>
+          <div className="text-sm text-slate-900 font-medium">{data.label}</div>
         </div>
       </div>
-      <Handle type="source" position={Position.Bottom} className="!bg-slate-500" />
+      <Handle type="source" position={Position.Bottom} className="!bg-slate-400" />
     </div>
   );
 }
@@ -64,14 +53,6 @@ const nodeTypes = {
 
 export function DecisionTreeView({ data }: DecisionTreeViewProps) {
   const nodes: Node[] = useMemo(() => {
-    // Calculate positions for nodes
-    const nodeGroups: Record<number, typeof data.nodes> = {};
-    data.nodes.forEach((node, index) => {
-      const groupIndex = Math.floor(index / 3);
-      if (!nodeGroups[groupIndex]) nodeGroups[groupIndex] = [];
-      nodeGroups[groupIndex].push(node);
-    });
-
     return data.nodes.map((node, index) => {
       const groupIndex = Math.floor(index / 3);
       const positionInGroup = index % 3;
@@ -102,14 +83,17 @@ export function DecisionTreeView({ data }: DecisionTreeViewProps) {
         label: edge.label || undefined,
         animated: true,
         style: {
-          stroke: edge.label === 'valid' || edge.label === 'allowed' ? '#22c55e' : '#ef4444',
+          stroke: edge.label === 'valid' || edge.label === 'allowed' ? '#10b981' : '#ef4444',
+          strokeWidth: 2,
         },
         labelStyle: {
-          fill: '#94a3b8',
-          fontSize: 12,
+          fill: '#64748b',
+          fontSize: 11,
+          fontWeight: 500,
         },
         labelBgStyle: {
-          fill: '#1e293b',
+          fill: '#ffffff',
+          fillOpacity: 0.9,
         },
       })),
     [data.edges]
@@ -117,14 +101,15 @@ export function DecisionTreeView({ data }: DecisionTreeViewProps) {
 
   if (data.nodes.length === 0) {
     return (
-      <div className="text-center text-slate-400 py-8">
+      <div className="text-center text-slate-400 py-8 flex flex-col items-center">
+        <Icon icon="solar:share-outline" className="w-8 h-8 mb-2" />
         No decision tree data available
       </div>
     );
   }
 
   return (
-    <div className="h-[500px] w-full bg-slate-900 rounded-lg border border-slate-700">
+    <div className="h-[500px] w-full bg-slate-50 rounded-lg border border-slate-200">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -132,12 +117,12 @@ export function DecisionTreeView({ data }: DecisionTreeViewProps) {
         fitView
         attributionPosition="bottom-right"
       >
-        <Background color="#334155" gap={16} />
-        <Controls className="!bg-slate-800 !border-slate-600" />
+        <Background color="#cbd5e1" gap={16} />
+        <Controls className="!bg-white !border-slate-200 !shadow-sm [&>button]:!bg-white [&>button]:!border-slate-200 [&>button]:!text-slate-600 [&>button:hover]:!bg-slate-50" />
         <MiniMap
-          nodeColor={node => (node.data?.outcome ? '#22c55e' : '#ef4444')}
-          maskColor="rgba(15, 23, 42, 0.8)"
-          className="!bg-slate-800 !border-slate-600"
+          nodeColor={node => (node.data?.outcome ? '#10b981' : '#ef4444')}
+          maskColor="rgba(248, 250, 252, 0.8)"
+          className="!bg-white !border-slate-200"
         />
       </ReactFlow>
     </div>
