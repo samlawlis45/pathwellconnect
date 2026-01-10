@@ -8,15 +8,9 @@ import type { TraceQueryParams, TraceListResponse, TraceDetailResponse } from '@
 export function useTraces(params: TraceQueryParams = {}) {
   const { currentTenant } = useTenant();
 
-  // Build enterprise filter based on tenant
-  // Parent company (acme-company) sees all, subsidiaries see only their own
-  const enterpriseFilter = currentTenant.type === 'parent'
-    ? undefined  // Parent sees all
-    : currentTenant.id;
-
   const mergedParams = {
     ...params,
-    enterprise_id: params.enterprise_id || enterpriseFilter,
+    enterprise_id: params.enterprise_id || currentTenant.id,
   };
 
   const key = ['traces', JSON.stringify(mergedParams), currentTenant.id];

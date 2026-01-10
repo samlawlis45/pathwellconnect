@@ -19,28 +19,25 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Tenant Header */}
+      {/* Organization Header */}
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-2xl font-semibold text-slate-900">Intelligent Ledger</h1>
-            {currentTenant.type === 'subsidiary' && (
-              <span className="px-2 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-md">
+            {currentTenant && (
+              <span className="px-2 py-1 bg-pathwell-50 text-pathwell-700 text-xs font-medium rounded-md">
                 {currentTenant.name}
               </span>
             )}
           </div>
           <p className="text-slate-500">
-            {currentTenant.type === 'parent'
-              ? 'Enterprise-wide transaction visibility across all business units'
-              : `Transaction lineage for ${currentTenant.name}`
-            }
+            Transaction lineage explorer for AI agent governance
           </p>
         </div>
       </div>
 
-      {/* Systems Overview (for subsidiaries) */}
-      {currentTenant.type === 'subsidiary' && (
+      {/* Systems Overview */}
+      {currentTenant?.systems && currentTenant.systems.length > 0 && (
         <div className="bg-gradient-to-r from-slate-50 to-white border border-slate-200 rounded-xl p-5">
           <div className="flex items-center gap-2 text-sm text-slate-500 mb-3">
             <Icon icon="solar:server-path-outline" className="w-4 h-4" />
@@ -157,9 +154,9 @@ export default function DashboardPage() {
                         {trace.correlation_id || trace.trace_id.slice(0, 8)}
                       </span>
                       <StatusBadge status={trace.status} />
-                      {trace.enterprise_id && currentTenant.type === 'parent' && (
+                      {trace.enterprise_id && (
                         <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded">
-                          {formatEnterpriseName(trace.enterprise_id)}
+                          {trace.enterprise_id}
                         </span>
                       )}
                     </div>
@@ -184,15 +181,6 @@ export default function DashboardPage() {
       </div>
     </div>
   );
-}
-
-function formatEnterpriseName(id: string): string {
-  const names: Record<string, string> = {
-    'acme-company': 'ACME Co',
-    'acme-manufacturing': 'Manufacturing',
-    'acme-distributing': 'Distributing',
-  };
-  return names[id] || id;
 }
 
 function StatCard({

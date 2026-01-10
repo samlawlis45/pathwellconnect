@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/Providers';
-import { Header } from '@/components/Header';
+import { AppShell } from '@/components/AppShell';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -20,12 +20,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Providers>
-          <div className="min-h-screen bg-white">
-            <Header />
-            <main className="max-w-7xl mx-auto px-6 py-8">
-              {children}
-            </main>
-          </div>
+          <AppShell>
+            {children}
+          </AppShell>
         </Providers>
       </body>
     </html>
