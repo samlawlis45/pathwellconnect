@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS traces (
     -- First event context
     initiating_agent_id VARCHAR(255),
     initiating_developer_id UUID,
-    initiating_enterprise_id UUID,
+    enterprise_id VARCHAR(100),
 
     -- Metadata
     metadata JSONB,
@@ -31,7 +31,7 @@ CREATE INDEX idx_traces_correlation_id ON traces(correlation_id) WHERE correlati
 CREATE INDEX idx_traces_status ON traces(status);
 CREATE INDEX idx_traces_started_at ON traces(started_at DESC);
 CREATE INDEX idx_traces_last_event_at ON traces(last_event_at DESC);
-CREATE INDEX idx_traces_enterprise_id ON traces(initiating_enterprise_id) WHERE initiating_enterprise_id IS NOT NULL;
+CREATE INDEX idx_traces_enterprise_id ON traces(enterprise_id) WHERE enterprise_id IS NOT NULL;
 CREATE INDEX idx_traces_agent_id ON traces(initiating_agent_id) WHERE initiating_agent_id IS NOT NULL;
 
 -- Receipt events table: Full receipt storage with all fields indexed

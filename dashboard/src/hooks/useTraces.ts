@@ -2,14 +2,28 @@
 
 import useSWR from 'swr';
 import { fetchTraces, fetchTrace } from '@/lib/api';
+import { useTenant } from '@/contexts/TenantContext';
 import type { TraceQueryParams, TraceListResponse, TraceDetailResponse } from '@/lib/types';
 
 export function useTraces(params: TraceQueryParams = {}) {
-  const key = ['traces', JSON.stringify(params)];
+  const { currentTenant } = useTenant();
+
+  // Build enterprise filter based on tenant
+  // Parent company (acme-company) sees all, subsidiaries see only their own
+  const enterpriseFilter = currentTenant.type === 'parent'
+    ? undefined  // Parent sees all
+    : currentTenant.id;
+
+  const mergedParams = {
+    ...params,
+    enterprise_id: params.enterprise_id || enterpriseFilter,
+  };
+
+  const key = ['traces', JSON.stringify(mergedParams), currentTenant.id];
 
   const { data, error, isLoading, mutate } = useSWR<TraceListResponse>(
     key,
-    () => fetchTraces(params),
+    () => fetchTraces(mergedParams),
     {
       refreshInterval: 5000, // Auto-refresh every 5 seconds
     }

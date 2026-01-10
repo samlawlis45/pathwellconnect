@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 pub struct TraceQuery {
     pub correlation_id: Option<String>,
     pub agent_id: Option<String>,
-    pub enterprise_id: Option<Uuid>,
+    pub enterprise_id: Option<String>,
     pub status: Option<String>,
     pub from: Option<DateTime<Utc>>,
     pub to: Option<DateTime<Utc>>,
@@ -29,7 +29,7 @@ pub struct TraceSummary {
     pub policy_deny_count: i32,
     pub initiating_agent_id: Option<String>,
     pub initiating_developer_id: Option<Uuid>,
-    pub initiating_enterprise_id: Option<Uuid>,
+    pub enterprise_id: Option<String>,
 }
 
 /// Response for trace list
@@ -163,11 +163,11 @@ impl QueryService {
             r#"
             SELECT trace_id, correlation_id, status, started_at, last_event_at,
                    event_count, policy_deny_count, initiating_agent_id,
-                   initiating_developer_id, initiating_enterprise_id
+                   initiating_developer_id, enterprise_id
             FROM traces
             WHERE ($1::text IS NULL OR correlation_id = $1)
               AND ($2::text IS NULL OR initiating_agent_id = $2)
-              AND ($3::uuid IS NULL OR initiating_enterprise_id = $3)
+              AND ($3::text IS NULL OR enterprise_id = $3 OR enterprise_id LIKE $3 || '%')
               AND ($4::text IS NULL OR status = $4)
               AND ($5::timestamptz IS NULL OR started_at >= $5)
               AND ($6::timestamptz IS NULL OR started_at <= $6)
@@ -193,7 +193,7 @@ impl QueryService {
             FROM traces
             WHERE ($1::text IS NULL OR correlation_id = $1)
               AND ($2::text IS NULL OR initiating_agent_id = $2)
-              AND ($3::uuid IS NULL OR initiating_enterprise_id = $3)
+              AND ($3::text IS NULL OR enterprise_id = $3 OR enterprise_id LIKE $3 || '%')
               AND ($4::text IS NULL OR status = $4)
               AND ($5::timestamptz IS NULL OR started_at >= $5)
               AND ($6::timestamptz IS NULL OR started_at <= $6)
@@ -222,7 +222,7 @@ impl QueryService {
             r#"
             SELECT trace_id, correlation_id, status, started_at, last_event_at,
                    event_count, policy_deny_count, initiating_agent_id,
-                   initiating_developer_id, initiating_enterprise_id
+                   initiating_developer_id, enterprise_id
             FROM traces
             WHERE trace_id = $1
             "#
@@ -240,7 +240,7 @@ impl QueryService {
             r#"
             SELECT trace_id, correlation_id, status, started_at, last_event_at,
                    event_count, policy_deny_count, initiating_agent_id,
-                   initiating_developer_id, initiating_enterprise_id
+                   initiating_developer_id, enterprise_id
             FROM traces
             WHERE correlation_id = $1
             "#

@@ -1,11 +1,13 @@
 'use client';
 
 import { useTraces } from '@/hooks/useTraces';
+import { useTenant } from '@/contexts/TenantContext';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { Icon } from '@iconify/react';
 
 export default function DashboardPage() {
+  const { currentTenant } = useTenant();
   const { traces, total, isLoading, error } = useTraces({ limit: 5 });
 
   const stats = {
@@ -17,10 +19,45 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Intelligent Ledger</h1>
-        <p className="text-slate-500 mt-1">Transaction lineage explorer for AI agent governance</p>
+      {/* Tenant Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-2xl font-semibold text-slate-900">Intelligent Ledger</h1>
+            {currentTenant.type === 'subsidiary' && (
+              <span className="px-2 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-md">
+                {currentTenant.name}
+              </span>
+            )}
+          </div>
+          <p className="text-slate-500">
+            {currentTenant.type === 'parent'
+              ? 'Enterprise-wide transaction visibility across all business units'
+              : `Transaction lineage for ${currentTenant.name}`
+            }
+          </p>
+        </div>
       </div>
+
+      {/* Systems Overview (for subsidiaries) */}
+      {currentTenant.type === 'subsidiary' && (
+        <div className="bg-gradient-to-r from-slate-50 to-white border border-slate-200 rounded-xl p-5">
+          <div className="flex items-center gap-2 text-sm text-slate-500 mb-3">
+            <Icon icon="solar:server-path-outline" className="w-4 h-4" />
+            Connected Systems
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {currentTenant.systems.map((system) => (
+              <span
+                key={system}
+                className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 font-medium"
+              >
+                {system}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -61,7 +98,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <h3 className="font-semibold text-slate-900">Track Transaction</h3>
-              <p className="text-slate-500 text-sm mt-0.5">Enter a reference number to track its journey</p>
+              <p className="text-slate-500 text-sm mt-0.5">Enter a PO, SO, or invoice number to track its journey</p>
             </div>
           </div>
         </Link>
@@ -116,10 +153,15 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm text-slate-700">
+                      <span className="font-mono text-sm font-medium text-slate-900">
                         {trace.correlation_id || trace.trace_id.slice(0, 8)}
                       </span>
                       <StatusBadge status={trace.status} />
+                      {trace.enterprise_id && currentTenant.type === 'parent' && (
+                        <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded">
+                          {formatEnterpriseName(trace.enterprise_id)}
+                        </span>
+                      )}
                     </div>
                     <div className="text-sm text-slate-500 mt-1">
                       {trace.event_count} events
@@ -142,6 +184,15 @@ export default function DashboardPage() {
       </div>
     </div>
   );
+}
+
+function formatEnterpriseName(id: string): string {
+  const names: Record<string, string> = {
+    'acme-company': 'ACME Co',
+    'acme-manufacturing': 'Manufacturing',
+    'acme-distributing': 'Distributing',
+  };
+  return names[id] || id;
 }
 
 function StatCard({

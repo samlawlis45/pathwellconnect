@@ -8,7 +8,7 @@ export interface TraceSummary {
   policy_deny_count: number;
   initiating_agent_id: string | null;
   initiating_developer_id: string | null;
-  initiating_enterprise_id: string | null;
+  enterprise_id: string | null;
 }
 
 export interface TraceListResponse {
