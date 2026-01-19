@@ -11,7 +11,7 @@ mod engine;
 mod api;
 
 use engine::{OPAEngine, PolicyEngine};
-use api::evaluate_policy;
+use api::{evaluate_policy, evaluate_policy_v2};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -36,6 +36,7 @@ async fn main() -> Result<()> {
     // Create router
     let app = Router::new()
         .route("/v1/evaluate", post(evaluate_policy))
+        .route("/v2/evaluate", post(evaluate_policy_v2))
         .route("/health", axum::routing::get(health_check))
         .with_state(engine);
 

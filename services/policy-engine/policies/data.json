@@ -2,7 +2,18 @@
   "pathwell": {
     "allowed_paths": [
       "**"
-    ]
+    ],
+    "trust_threshold": 0.3,
+    "warn_threshold": 0.1,
+    "trust_enforcement": {
+      "enabled": true,
+      "mode": "enforce",
+      "bypass_for_valid_certs": false
+    },
+    "tenant_defaults": {
+      "policy_scope": "inherit",
+      "allow_trust_override": true
+    }
   }
 }
 

@@ -5,6 +5,7 @@ use axum::{
 };
 use uuid::Uuid;
 use chrono::Utc;
+use rust_decimal::prelude::ToPrimitive;
 
 use crate::api::models::*;
 use crate::api::routes::AppState;
@@ -298,6 +299,93 @@ pub async fn register_developer(
     Ok(Json(RegisterDeveloperResponse {
         developer_id: payload.developer_id,
         created_at: Utc::now().to_rfc3339(),
+    }))
+}
+
+/// Enhanced agent validation that includes trust score and tenant context
+pub async fn validate_agent_v2(
+    State(state): State<AppState>,
+    Path(agent_id): Path<String>,
+) -> Result<Json<ValidateAgentResponseV2>, (StatusCode, Json<ErrorResponse>)> {
+    let pool = &state.pool;
+
+    // Get agent with new Phase 1 fields
+    let agent = sqlx::query!(
+        r#"
+        SELECT a.id, a.agent_id, a.developer_id, a.enterprise_id,
+               a.revoked_at, a.tenant_id, a.attribution, a.trust_score_id,
+               t.hierarchy_path as "tenant_hierarchy_path?"
+        FROM agents a
+        LEFT JOIN tenants t ON a.tenant_id = t.id
+        WHERE a.agent_id = $1
+        "#,
+        agent_id
+    )
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "database_error".to_string(),
+                message: e.to_string(),
+            }),
+        )
+    })?;
+
+    let agent = agent.ok_or_else(|| {
+        (
+            StatusCode::NOT_FOUND,
+            Json(ErrorResponse {
+                error: "agent_not_found".to_string(),
+                message: format!("Agent {} not found", agent_id),
+            }),
+        )
+    })?;
+
+    // Get trust score if available
+    let trust_score = if let Some(trust_score_id) = agent.trust_score_id {
+        sqlx::query!(
+            r#"
+            SELECT composite_score, minimum_threshold, threshold_action
+            FROM trust_scores WHERE id = $1
+            "#,
+            trust_score_id
+        )
+        .fetch_optional(pool)
+        .await
+        .ok()
+        .flatten()
+        .map(|ts| {
+            let composite = ts.composite_score.to_f64().unwrap_or(0.5);
+            let threshold = ts.minimum_threshold.and_then(|t| t.to_f64());
+            TrustScoreSummary {
+                composite_score: composite,
+                is_trusted: threshold.map(|t| composite >= t).unwrap_or(true),
+                threshold_action: ts.threshold_action,
+            }
+        })
+    } else {
+        None
+    };
+
+    // Parse attribution
+    let attribution = agent.attribution.as_ref().and_then(|attr| {
+        serde_json::from_value::<Attribution>(attr.clone())
+            .ok()
+            .map(|a| a.into())
+    });
+
+    Ok(Json(ValidateAgentResponseV2 {
+        valid: agent.revoked_at.is_none(),
+        agent_id: agent.agent_id,
+        developer_id: agent.developer_id,
+        enterprise_id: agent.enterprise_id,
+        revoked: agent.revoked_at.is_some(),
+        tenant_id: agent.tenant_id,
+        tenant_hierarchy_path: agent.tenant_hierarchy_path,
+        trust_score,
+        attribution,
     }))
 }
 

@@ -17,8 +17,9 @@ mod api;
 mod queries;
 
 use api::{
-    store_receipt, ingest_external_event,
+    store_receipt, store_receipt_v2, ingest_external_event,
     list_traces, get_trace, get_trace_timeline, get_trace_decisions, lookup_by_correlation,
+    get_trace_trust_events,
 };
 use store::ReceiptStore;
 use kafka_producer::KafkaProducer;
@@ -75,15 +76,18 @@ async fn main() -> Result<()> {
 
     // Create router with all endpoints
     let app = Router::new()
-        // Write endpoints
+        // V1 Write endpoints
         .route("/v1/receipts", post(store_receipt))
         .route("/v1/events/external", post(ingest_external_event))
-        // Read endpoints
+        // V1 Read endpoints
         .route("/v1/traces", get(list_traces))
         .route("/v1/traces/:trace_id", get(get_trace))
         .route("/v1/traces/:trace_id/timeline", get(get_trace_timeline))
         .route("/v1/traces/:trace_id/decisions", get(get_trace_decisions))
         .route("/v1/lookup/:correlation_id", get(lookup_by_correlation))
+        // V2 Endpoints (Phase 1 - Trust & Attribution)
+        .route("/v2/receipts", post(store_receipt_v2))
+        .route("/v1/traces/:trace_id/trust-events", get(get_trace_trust_events))
         // Health check
         .route("/health", get(health_check))
         .layer(cors)
@@ -100,6 +104,9 @@ async fn main() -> Result<()> {
     info!("  GET  /v1/traces/:trace_id/timeline - Get timeline");
     info!("  GET  /v1/traces/:trace_id/decisions - Get decision tree");
     info!("  GET  /v1/lookup/:correlation_id - Lookup by correlation ID");
+    info!("V2 endpoints (Phase 1):");
+    info!("  POST /v2/receipts - Store receipt with trust/attribution");
+    info!("  GET  /v1/traces/:trace_id/trust-events - Get trust events");
 
     axum::serve(listener, app).await?;
 
